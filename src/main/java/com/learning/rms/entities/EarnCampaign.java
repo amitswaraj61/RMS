@@ -1,14 +1,9 @@
 package com.learning.rms.entities;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +31,6 @@ public class EarnCampaign {
 
 	private String eventType;// 1. Not Transactional(WalletCreate/kyc) 2, Spend(Transactional (P2P, P2M,
 								// BBPS)
-
 	private String paymentCategory;
 
 	private String paymentInstrument;
@@ -46,8 +40,5 @@ public class EarnCampaign {
 	private String rewardCurrency; // Cashback, points
 
 	private int rewardAmount;
-
-	@OneToMany(mappedBy = "earnCampaign", fetch = FetchType.LAZY)
-	private List<Transactions> transaction = new ArrayList<>();
 
 }

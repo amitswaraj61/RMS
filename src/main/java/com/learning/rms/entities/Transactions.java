@@ -1,12 +1,10 @@
 package com.learning.rms.entities;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,28 +17,30 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Transactions {
 
-	@Id
-	private String txnId;
 
-	@Column(unique = true, nullable = false)
+	@Id
 	private String txnRefId;
 
-	@Column(unique = true, nullable = false)
+	@Column(nullable = false,length=10)
 	private String mobileNumber;
 
+	@Column(nullable = false,length=10)
 	private String lob;
 
+	@Column(nullable = false,length=20)
 	private String eventType;
 
+	@Column(nullable = false,length=20)
 	private String paymentCategory;
 
+	@Column(nullable = false,length=20)
 	private String paymentInstrument;
 
+	@Column(nullable = false,length=20)
 	private double amount;
 
-	private Date transactionDate;
+	@Column(nullable = false)
+	private LocalDateTime transactionDate;
 
-	@ManyToOne
-	@JoinColumn(name = "campaign_id")
-	private EarnCampaign earnCampaign;
+	private Campaign campaign;
 }
