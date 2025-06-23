@@ -1,5 +1,7 @@
 package com.learning.rms.services.impl;
 
+import java.time.LocalDateTime;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public TransactionsDto saveTransaction(TransactionsDto transactionsDto) {
+		
 
 		Transactions transactions = this.modelMapper.map(transactionsDto, Transactions.class);
 
@@ -42,17 +45,8 @@ public class TransactionServiceImpl implements TransactionService {
 			this.campaignRepo.findById(campaignId)
 					.orElseThrow(() -> new ResourceNotFoundException("Campaign id not exists.. " + campaignId));
 		}
-//		this.transactionRepo.save(transactions);
-//		return this.modelMapper.map(transactions, TransactionsDto.class);
+		this.transactionRepo.save(transactions);
+		return this.modelMapper.map(transactions, TransactionsDto.class);
 
-		try {
-
-			this.transactionRepo.save(transactions);
-			return this.modelMapper.map(transactions, TransactionsDto.class);
-		} catch (Exception e) {
-			throw new ResourceNotFoundException(
-					"Transactions Data is not getting save in DB.." + transactions.getTxnRefId());
-
-		}
 	}
 }

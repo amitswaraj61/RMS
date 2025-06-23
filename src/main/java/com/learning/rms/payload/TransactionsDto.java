@@ -2,8 +2,10 @@ package com.learning.rms.payload;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.learning.rms.entities.Campaign;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -18,6 +20,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 public class TransactionsDto {
+	
+	@Schema(hidden = true)
+	private Integer id;
 
 	@NotBlank(message = "TransactionRefId is Required")
 	private String txnRefId;
@@ -42,7 +47,9 @@ public class TransactionsDto {
 	private double amount;
 
 	@NotNull(message = "Check-in date is required")
-	@PastOrPresent(message="Transaction Date must not be in future")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@Schema(description = "Transaction date in format yyyy-MM-dd HH:mm:ss", example = "2025-06-23 15:12:00")
+	//@PastOrPresent(message="Transaction Date must not be in future")
 	private LocalDateTime transactionDate;
 
 	private Campaign campaign;

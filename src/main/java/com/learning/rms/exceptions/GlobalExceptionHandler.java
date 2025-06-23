@@ -46,12 +46,12 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<CommonResponse>(api, HttpStatus.NOT_FOUND);
 	}
 
-//	@ExceptionHandler(HttpMessageNotReadableException.class)
-//	public ResponseEntity<ErrorResponse> httpMessageNotReadableException(HttpMessageNotReadableException ex) {
-//		String message = "Please Add Proper Request";
-//		ErrorResponse api = new ErrorResponse(message, false, HttpStatus.BAD_REQUEST.value());
-//		return new ResponseEntity<ErrorResponse>(api, HttpStatus.BAD_REQUEST);
-//	}
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<CommonResponse> httpMessageNotReadableException(HttpMessageNotReadableException ex) {
+		String message = "Please Add Proper Request";
+		CommonResponse api = new CommonResponse(message, false, HttpStatus.BAD_REQUEST.value());
+		return new ResponseEntity<CommonResponse>(api, HttpStatus.BAD_REQUEST);
+	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<CommonResponse> dataIntegrityViolationException(DataIntegrityViolationException ex) {
