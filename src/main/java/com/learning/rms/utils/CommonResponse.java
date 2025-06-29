@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Data
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 public class CommonResponse {
-
 
 	private String message;
 	private int status;

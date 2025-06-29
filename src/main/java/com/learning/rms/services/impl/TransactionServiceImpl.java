@@ -1,15 +1,15 @@
 package com.learning.rms.services.impl;
 
-import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.learning.rms.entities.Transactions;
-import com.learning.rms.exceptions.ResourceNotFoundException;
 import com.learning.rms.payload.TransactionsDto;
-import com.learning.rms.repositories.CampaignRepo;
-import com.learning.rms.repositories.CustomerRepo;
 import com.learning.rms.repositories.TransactionRepo;
 import com.learning.rms.services.TransactionService;
 
@@ -19,34 +19,20 @@ public class TransactionServiceImpl implements TransactionService {
 	@Autowired
 	private TransactionRepo transactionRepo;
 
-	@Autowired
-	private CustomerRepo customerRepo;
-
-	@Autowired
-	private CampaignRepo campaignRepo;
+	private static final Logger logger = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
 	@Autowired
 	private ModelMapper modelMapper;
 
-	@Override
-	public TransactionsDto saveTransaction(TransactionsDto transactionsDto) {
-		
-
+	public CompletableFuture<Boolean> saveTransaction(TransactionsDto transactionsDto) {
 		Transactions transactions = this.modelMapper.map(transactionsDto, Transactions.class);
-
-		this.customerRepo.findByMobileNumber(transactionsDto.getMobileNumber()).orElseThrow(
-				() -> new ResourceNotFoundException("Customer id not exists.. " + transactionsDto.getMobileNumber()));
-
-		if (transactionsDto.getCampaign() != null && transactionsDto.getCampaign().isRewardFlag()) {
-			String campaignId = transactionsDto.getCampaign().getCampaignId();
-			if (campaignId != null && campaignId.trim().isEmpty()) {
-				throw new ResourceNotFoundException("Campaign Id is Required..");
-			}
-			this.campaignRepo.findById(campaignId)
-					.orElseThrow(() -> new ResourceNotFoundException("Campaign id not exists.. " + campaignId));
+		try {
+			Transactions save = this.transactionRepo.save(transactions);
+			logger.info("✅ Transaction successfully inserted: " + save.getTxnRefId());
+			return CompletableFuture.completedFuture(true);
+		} catch (Exception e) {
+			logger.error("❌ Transaction failed to insert: " + transactionsDto.getTxnRefId(), e);
+			return CompletableFuture.completedFuture(false);
 		}
-		this.transactionRepo.save(transactions);
-		return this.modelMapper.map(transactions, TransactionsDto.class);
-
 	}
 }

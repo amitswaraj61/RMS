@@ -1,8 +1,10 @@
 package com.learning.rms.services;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.learning.rms.payload.TransactionsDto;
 
 public interface TransactionService {
 
-	TransactionsDto saveTransaction(TransactionsDto transactionsDto);
+	CompletableFuture<Boolean> saveTransaction(TransactionsDto transactionsDto);
 }
