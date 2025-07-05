@@ -6,5 +6,5 @@ import com.learning.rms.entities.EarnCampaign;
 
 public interface EarnCampaignService {
 
-	Optional<EarnCampaign>  getCampaignById(String campaignId);
+	Optional<EarnCampaign> getAllTransactions(String campaignId);
 }

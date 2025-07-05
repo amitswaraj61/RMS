@@ -3,6 +3,8 @@ package com.learning.rms.entities;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.Getter;
@@ -17,6 +19,9 @@ import lombok.Setter;
 public class EarnCampaign {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	
 	private String campaignId;
 
 	private String campaignName;

@@ -25,7 +25,7 @@ public class KafkaProducer {
 	private KafkaTemplate<String, TransactionsDto> kafkaTemplate;
 
 	@Async("asyncExecutor")
-	public CompletableFuture<?> sendMessage(TransactionsDto transactionsDto) {
+	public CompletableFuture<CommonResponse> sendMessage(TransactionsDto transactionsDto) {
 		Message<TransactionsDto> message = MessageBuilder.withPayload(transactionsDto)
 				.setHeader(KafkaHeaders.TOPIC, "Transactions").build();
 
