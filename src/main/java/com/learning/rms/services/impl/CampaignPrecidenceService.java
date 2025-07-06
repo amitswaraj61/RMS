@@ -63,12 +63,12 @@ public class CampaignPrecidenceService {
 
 	    // Choose the campaign with the highest amount
 	    EarnCampaign finalCampaign = prioritizedGroup.stream()
-	        .max(Comparator.comparingDouble(EarnCampaign::getAmount))
+	        .max(Comparator.comparingInt(EarnCampaign::getRewardAmount))
 	        .orElse(null);
 
 	    if (finalCampaign != null) {
 	        logger.info("🎯 Final selected campaign based on precedence and amount: ID={}, Amount={}, Currency={}",
-	                finalCampaign.getCampaignId(), finalCampaign.getAmount(), finalCampaign.getRewardCurrency());
+	                finalCampaign.getCampaignId(), finalCampaign.getRewardAmount(), finalCampaign.getRewardCurrency());
 
 	        // Process final campaign...
 	        rewardsService.saveRewards(finalCampaign, customer, transactionsDto);
