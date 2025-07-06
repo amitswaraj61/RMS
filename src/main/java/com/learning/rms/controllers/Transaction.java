@@ -1,36 +1,81 @@
 package com.learning.rms.controllers;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.learning.rms.exceptions.ResourceNotFoundException;
+import com.learning.rms.kafka.KafkaProducer;
+import com.learning.rms.payload.TransactionsDto;
+import com.learning.rms.repositories.CampaignRepo;
+import com.learning.rms.repositories.CustomerRepo;
+import com.learning.rms.repositories.TransactionRepo;
+import com.learning.rms.utils.CommonResponse;
 
-import com.learning.rms.entities.EarnCampaign;
-import com.learning.rms.entities.Transactions;
-import com.learning.rms.services.EarnCampaignService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api")
 public class Transaction {
-	
-	@Autowired
-	private EarnCampaignService earnCampaignService;
 
-	@GetMapping("/transactions/{id}")
-	public ResponseEntity<?> getTransactionById(@PathVariable String id) {
-	    Optional<EarnCampaign> campaignById = earnCampaignService.getCampaignById(id);
-	    
-	    if (campaignById.isPresent()) {
-	        return ResponseEntity.ok(campaignById.get());
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Campaign not found for ID: " + id);
-	    }
+	@Autowired
+	private KafkaProducer kafkaProducer;
+
+	@Autowired
+	private CustomerRepo customerRepo;
+
+	@Autowired
+	private CampaignRepo campaignRepo;
+
+	@Autowired
+	private TransactionRepo transactionRepo;
+
+	@PostMapping("/transactions")
+	public CompletableFuture<ResponseEntity<?>> getTransactionById(
+			@Valid @RequestBody TransactionsDto transactionsDto) {
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime oneDayAgo = now.minusDays(1);
+		LocalDateTime thirtyMinutesAhead = now.plusMinutes(30);
+
+		LocalDateTime txnDate = transactionsDto.getTransactionDate();
+
+		this.customerRepo.findByMobileNumber(transactionsDto.getMobileNumber()).orElseThrow(
+				() -> new ResourceNotFoundException("Customer id not exists.. " + transactionsDto.getMobileNumber()));
+
+		if (this.transactionRepo.existsByTxnRefId(transactionsDto.getTxnRefId())) {
+			CommonResponse response = new CommonResponse("TxnRefId Already Exists", false,
+					HttpStatus.BAD_REQUEST.value());
+			return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
+		}
+
+		if (transactionsDto.getCampaign() != null && transactionsDto.getCampaign().isRewardFlag()) {
+			String campaignId = transactionsDto.getCampaign().getCampaignId();
+			if (campaignId != null && campaignId.trim().isEmpty()) {
+				throw new ResourceNotFoundException("Campaign Id is Required..");
+			}
+			this.campaignRepo.findByCampaignId(campaignId)
+					.orElseThrow(() -> new ResourceNotFoundException("Campaign id not exists.. " + campaignId));
+		}
+
+		if (txnDate.isBefore(oneDayAgo) || txnDate.isAfter(thirtyMinutesAhead)) {
+			CommonResponse response = new CommonResponse(
+					"Transaction date must be within 1 day in past and 30 minutes in future", false,
+					HttpStatus.BAD_REQUEST.value());
+			return CompletableFuture.completedFuture(ResponseEntity.badRequest().body(response));
+		}
+
+		return kafkaProducer.sendMessage(transactionsDto).thenApply(response -> {
+			if (response.isSuccess()) {
+				return ResponseEntity.status(HttpStatus.CREATED).body(response);
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			}
+		});
 	}
 }
